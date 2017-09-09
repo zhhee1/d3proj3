@@ -1,7 +1,165 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="http://d3js.org/d3.v3.js"></script>
+<script src="button.js"></script>
 <style>
+
+    .material-icons.md-light {
+        color: rgba(255, 255, 255, 1);
+        cursor: pointer;
+    }
+
+    .material-icons.md-18 {
+        font-size: 24px;
+        position: relative;
+        top: 8px;
+    }
+
+    .material-icons.menu {
+        position: relative;
+        bottom: 10px;
+        cursor: pointer;
+    }
+
+    .material-icons.nav {
+        position: absolute;
+        top: 12px;
+        right: 10px;
+        font-size: 36px;
+        margin-left: 50px;
+        transition: white;
+    }
+
+    .material-icons.nav:hover{
+        color: black;
+        cursor: pointer;
+    }
+
+    form {
+        margin:5px auto;
+    }
+
+    .search {
+        width:230px;
+        padding: 8px 5px;
+        background-color: white;
+        background-image: url('search2.png');
+        background-position: 3px 3px;
+        background-repeat: no-repeat;
+        padding-left: 35px;
+
+    }
+
+    .dropdown {
+        width:150px;
+        margin: 5px auto;
+        padding: 8px 5px;
+    }
+
+    .sidenav {
+        height: 100%; /* 100% Full-height */
+        width: 0; /* 0 width - change this with JavaScript */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Stay on top */
+        top: 0;
+        left: 0;
+        background-color: #63A3F6; /* Black*/
+        overflow-x: hidden; /* Disable horizontal scroll */
+        padding-top: 10px; /* Place content 60px from the top */
+        transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+    }
+
+    .sidenav a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 25px;
+        color: white;
+        display: block;
+        transition: 0.3s
+    }
+
+    .sidenav a:hover, .offcanvas a:focus{
+        color: black;
+    }
+
+    .sidenav .closebtn {
+        position: absolute;
+        top: 0px;
+        right: 10px;
+        font-size: 36px;
+        margin-left: 50px;
+    }
+
+    .img {
+        padding: 0px 39px;
+    }
+
+    .img2{
+        padding: 0px 0px;
+    }
+
+    /* The switch - the box around the slider */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 30px;
+        height: 18px;
+    }
+
+    /* Hide default HTML checkbox */
+    .switch input {display:none;}
+
+    /* The slider */
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 10px;
+        width: 10px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    input:checked + .slider {
+        background-color: #2196F3;
+    }
+
+    input:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked + .slider:before {
+        -webkit-transform: translateX(11px);
+        -ms-transform: translateX(11px);
+        transform: translateX(11px);
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+        border-radius: 14px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+
 
     path.link {
         fill: none;
@@ -23,8 +181,6 @@
     div.tooltip {
         position: absolute;
         text-align: center;
-        width: 60px;
-        height: 28px;
         padding: 2px;
         font: 12px sans-serif;
         background: lightsteelblue;
@@ -33,135 +189,3242 @@
         pointer-events: none;
     }
 
+    path.link.straight {
+    }
+
+    path.link.dotted {
+        stroke-dasharray: 3,3
+    }
+
+    path.link.double{
+        stroke-width: 1.5px;
+        stroke: blue;
+    }
+
 </style>
 <body>
-<script>
+<div id="mySidenav" class="sidenav">
+    <img class="img" src="//www.monash.edu/__data/assets/git_bridge/0006/509343/deploy/mysource_files/monash-logo-mono.svg">
+    <i class="material-icons md-light nav" onClick="closeNav()" >chevron_left</i>
+    <div id="navclose"></div>
+    <form action="#" onSubmit="redraw()">
+        <input class="search" type="search" id="search" placeholder="Search Unit... ">
+    </form>
+    <form action="#" onSubmit="redraw2()">
+        <input class="search" type="search" id="search2" placeholder="Search Learning Outcome...">
+    </form>
+    <form action="#" onSubmit="redraw3()">
+        <input class="search" type="search" id="search3" placeholder="Search Competencies...">
+    </form>
 
-    // get the data
-    d3.csv("force.csv", function(links) {
+    Future Units <select class="dropdown" id="level" onchange="level()">
+    <option value="0" selected="selected">0 levels</option>
+    <option value="1">1 level</option>
+    <option value="2">2 levels</option>
+    <option value="3">3 levels</option>
+</select>
 
-        var nodes = {};
+    Past Units <select class="dropdown" id="levels" onchange="levels()">
+    <option value="0" selected="selected">0 levels</option>
+    <option value="1">1 level</option>
+    <option value="2">2 levels</option>
+    <option value="3">3 levels</option>
+</select>
 
-// Compute the distinct nodes from the links.
-        links.forEach(function(link) {
-            link.source = nodes[link.source] ||
-                (nodes[link.source] = {name: link.source});
-            link.target = nodes[link.target] ||
-                (nodes[link.target] = {name: link.target});
+</div>
 
-            link.value = +link.value;
-            console.log(link)
+<div id="main">
 
-        });
+    <div>
+        <i class="material-icons menu" onclick="openNav()">menu</i>
+        <img class="img2" src="//www.monash.edu/__data/assets/git_bridge/0006/509343/deploy/mysource_files/monash-logo-mono.svg">
+    </div>
 
-        var width = 1000,
-            height = 800;
+    <script>
 
-        var force = d3.layout.force()
-            .nodes(d3.values(nodes))
-            .links(links)
-            .size([width, height])
-            .linkDistance(150)
-            .charge(-1000)
-            .on("tick", tick)
-            .start();
+        var b = 0;
+        var selector = 0;
+        var layer = 0;
+        var layers = 0;
 
-        var svg = d3.select("body").append("svg")
-            .attr("width", width)
-            .attr("height", height);
-
-// build the arrow.
-        svg.append("svg:defs").selectAll("marker")
-            .data(["end"])      // Different link/path types can be defined here
-            .enter().append("svg:marker")    // This section adds in the arrows
-            .attr("id", String)
-            .attr("viewBox", "0 -5 10 10")
-            .attr("refX", 43)
-            .attr("refY", -0.5)
-            .attr("markerWidth", 6)
-            .attr("markerHeight", 6)
-            .attr("orient", "auto")
-            .append("svg:path")
-            .attr("d", "M0,-5L10,0L0,5");
-
-// add the links and the arrows
-        var path = svg.append("svg:g").selectAll("path")
-            .data(force.links())
-            .enter().append("svg:path")
-             //   .attr("class", function(d) { return "link " + d.type; })
-            .attr("class", "link")
-            // .style("stroke-dasharray", ("3, 3")) //makes it dotted line
-            .attr("marker-end", "url(#end)");
-
-// define the nodes
-        var node = svg.selectAll(".node")
-            .data(force.nodes())
-            .enter().append("g")
-            .attr("class", "node")
-            .call(force.drag);
-
-        var div = d3.select("body").append("div")
-            .attr("class", "tooltip")
-            .style("opacity", 0);
-
-// add the nodes
-        node.append("circle")
-            .attr("fill","Silver")
-            .attr("r", 30)
-            .on("dblclick", function() {
-                d3.select(this)
-                    .attr("fill","gold");
-            })
-            .on("mouseover", function(d) {
-                div.transition()
-                    .duration(200)
-                    .style("opacity", .9);
-                div.html(d.title)
-                    .style("left", (d3.event.pageX) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
-            d3.select(this)
-                    .transition()
-                    .duration(200)
-                    .attr("r","35");
-            console.log(d)
-            })
-            .on("mouseout", function() {
-                div.transition()
-                    .duration(500)
-                    .style("opacity", 0);
-                d3.select(this)
-                    .transition()
-                    .duration(100)
-                    .attr("r","30");
-            });
-
-// add the text
-        node.append("text")
-            .attr("x", -20)
-            .attr("dy", ".35em")
-            .text(function(d) { return d.name; });
-
-// add the curvy lines
-        function tick() {
-            path.attr("d", function(d) {
-                var dx = (d.target.x * 5) - (d.source.x * 5),
-                    dy = (d.target.y * 5) - (d.source.y * 5),
-                    dr = Math.sqrt(dx * dx + dy * dy);
-                return "M" +
-                    d.source.x + "," +
-                    d.source.y + "A" +
-                    dr + "," + dr + " 0 0,1 " +
-                    d.target.x + "," +
-                    d.target.y;
-            });
-
-            node
-                .attr("transform", function(d) {
-                    return "translate(" + d.x + "," + d.y + ")"; });
+        function level() {
+            layer = document.getElementById("level").value;
         }
 
-    });
+        function levels() {
+            layers = document.getElementById("levels").value;
+        }
 
-</script>
+        var width = 1400,
+            height = 2500;
+
+        // get the data
+        d3.csv("force.csv", function(links) {
+
+            var nodes = {};
+
+            var svg = d3.select('body').append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            svg.append("ellipse")
+                .attr("cx", 50)
+                .attr("cy", 10)
+                .attr("rx", 35)
+                .attr("ry", 10)
+                .style("fill","#55D390");
+            svg.append("text")
+                .attr("x", 20)
+                .attr("dy", "14")
+                .text("1st Year Unit");
+
+            svg.append("ellipse")
+                .attr("cx", 483)
+                .attr("cy", 10)
+                .attr("rx", 35)
+                .attr("ry", 10)
+                .style("fill","#6AEAD7");
+            svg.append("text")
+                .attr("x", 453)
+                .attr("dy", "14")
+                .text("2nd Year Unit");
+
+            svg.append("ellipse")
+                .attr("cx", 916)
+                .attr("cy", 10)
+                .attr("rx", 35)
+                .attr("ry", 10)
+                .style("fill","#55B8D3");
+            svg.append("text")
+                .attr("x", 886)
+                .attr("dy", "14")
+                .text("3rd Year Unit");
+
+            svg.append("ellipse")
+                .attr("cx", 1350)
+                .attr("cy", 10)
+                .attr("rx", 35)
+                .attr("ry", 10)
+                .style("fill","#63A3F6");
+            svg.append("text")
+                .attr("x", 1320)
+                .attr("dy", "14")
+                .text("4th Year Unit");
+
+// Compute the distinct nodes from the links.
+            links.forEach(function(link) {
+                link.source = nodes[link.source] ||
+                    (nodes[link.source] = {name: link.source, title: link.stitle, check: +link.check, tier: +link.stier, pair: link.pair, num:link.snum, LO:link.slearning, competency:link.scompetency});
+                link.target = nodes[link.target] ||
+                    (nodes[link.target] = {name: link.target, title: link.ttitle, tier: +link.ttier, logic: link.logic, num: link.tnum, LO:link.tlearning, competency:link.tcompetency});
+            });
+
+            var force = d3.layout.force()
+                .nodes(d3.values(nodes))
+                .links(links)
+                .size([width, height])
+                .on("tick", tick)
+                .start();
+
+            links.forEach(function(link) {
+                if (link.check == 0) {
+                    link.type = "straight";
+                } else if (link.check == 1) {
+                    link.type = "dotted";
+                } else if (link.check == 2) {
+                    link.type = "double";
+                }
+            });
+
+// build the arrow.
+            svg.append("svg:defs").selectAll("marker")
+                .data(["end"])      // Different link/path types can be defined here
+                .enter().append("svg:marker")    // This section adds in the arrows
+                .attr("id", String)
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 38.5)
+                .attr("refY", -0.5)
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("orient", "auto")
+                .append("svg:path")
+                .attr("d", "M0,-5L10,0L0,5");
+
+// add the links and the arrows
+            var path = svg.append("svg:g").selectAll("path")
+                .data(force.links())
+                .enter().append("svg:path")
+                .attr("class", function(d) { return "link " + d.type; })
+                .on("mouseover", pair())
+                .on("mouseout", pair())
+                .attr("marker-end", function(d) {
+                    if (d.check <= 1) {
+                        return "url(#end)"
+                    }
+                });
+
+// define the nodes
+            var node = svg.selectAll(".node")
+                .data(force.nodes())
+                .enter().append("g")
+                .attr("class", "node")
+
+            var div = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+// add the nodes
+            node.append("circle")
+                .attr("fill",function(d) {
+                    if (d.tier == 1) {
+                        d.tier = 0.14;
+                        return "#55D390"
+                    } else if (d.tier == 2) {
+                        d.tier = 1.44;
+                        return "#6AEAD7"
+                    } else if (d.tier == 3) {
+                        d.tier = 2.72;
+                        return "#55B8D3"
+                    } else if (d.tier == 4) {
+                        return "#63A3F6"
+                    } else {
+                        return "White"
+                    }
+                })
+                .attr("r", 26)
+                .on("click", fade())
+                .on("dblclick", function(d) {
+                    d3.select(this)
+                    window.open("https://www.monash.edu.au/pubs/handbooks/units/"+d.name+".html", '_blank');
+                })
+                .on("contextmenu", function(d) {
+                    d3.event.preventDefault();
+                    d3.select(this)
+                    window.open("https://unitguidemanager.monash.edu/view?tpCode=S2-01&tpYear=2017&unitCode="+d.name+"&ticket=ST-752697a48f5cf6b236b48ae4e6355081");
+                })
+                .on("mouseover", function(d) {
+                    if (b==0) {
+                        selector = false;
+                    } else if (b==1) {
+                        selector = document.getElementById("reverse").checked;
+                    }
+                    div.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    div.html(d.title)
+                        .style("left", (d3.event.pageX) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+                })
+                .on("mouseout", function (){
+                    div.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                });
+
+// add the text
+            node.append("text")
+                .attr("x", function(d) {
+                    if(d.tier==0.2) {
+                        return -10
+                    } else {
+                        return -21
+                    }
+                })
+                .attr("dy", ".35em")
+                .text(function(d) { return d.name; });
+
+// add the curvy lines
+            function tick() {
+                path.attr("d", function(d) {
+                    var dx = (d.target.tier * 337) - (d.source.tier * 337),
+                        dy = (d.target.num * 80) - (d.source.num * 80),
+                        dr = 0;
+                    if (d.check == 2) {
+                        dr = Math.sqrt(dx * dx + dy * dy);
+                    }
+                    return "M" +
+                        (d.source.tier*337) + "," +
+                        (d.source.num*80) + "A" +
+                        dr + "," + dr + " 0 0,1 " +
+                        (d.target.tier*337) + "," +
+                        (d.target.num*80);
+                });
+
+                node
+                    .attr("transform", function(d) {
+                        return "translate(" + (d.tier * 337) + "," + (d.num * 80) + ")"; });
+            }
+//collect pairing data
+            function pairing(a, b) {
+                return links.some(function(d) {
+                    return (d.pair === a || d.pair === b);
+                });
+            }
+
+            var toggler = 0;
+            function pair() {
+                return function (d) {
+                    if (toggler == 0) {
+                        path.style("stroke", function (o) {
+                            if (o == d) return "red";
+                            if (o != d) d3.select(this).style("stroke", "none");
+                            div.transition()
+                                .duration(200)
+                                .style("opacity", .9);
+                            div.html(d.logic)
+                                .style("left", (d3.event.pageX) + "px")
+                                .style("top", (d3.event.pageY - 28) + "px");
+                            if (o.check == 2) {
+                                return pairing(d, o) | pairing(o, d) ? "red" : "blue";
+                            }
+                            return pairing(d, o) | pairing(o, d) ? "red" : "#666";
+                        });
+                        toggler = 1;
+                    }
+
+                    else if (toggler == 1) {
+                        path.style("stroke", function (o) {
+                            if (o.check == 2) {
+                                return "blue";
+                            } else {
+                                return "#666";
+                            }
+                        });
+                        div.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                        toggler = 0;
+                    }
+                };
+            }
+
+//collect neighboring data forward
+            function neighboringF(a, b) {
+                return links.some(function(d) {
+                    return (d.source === a && d.target === b);
+                });
+            }
+
+//collect neighboring data reversed
+            function neighboringR(a, b) {
+                return links.some(function(d) {
+                    return (d.target === a && d.source === b);
+                });
+            }
+//fade out all except neighbours
+            var toggle = 0;
+            function fade() {
+                return function(d) {
+                    if (toggle == 0) {
+                        if (layer == 0) {
+                            if (layers == 0) {
+                                node.style("opacity", function (o) {
+                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                    else return 0.1;
+                                });
+                                path.style("opacity", "0");
+                            }
+                            else if (layers == 1) {
+                                node.style("opacity", function (o) {
+                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                    return neighboringR(d, o) ? 1 : 0.1;
+                                });
+                                path.style("opacity", function (o) {
+                                    return o.target === d ? 1 : 0;
+                                });
+                            } else if (layers == 2) {
+                                var neighbours = [];
+                                node.style("opacity", function (o) {
+                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                    if (neighboringR(d, o)) neighbours.push(o);
+                                    return neighboringR(d, o) ? 1 : 0.1;
+                                });
+                                if (neighbours[0]==null) {
+                                    path.style("opacity", function (o) {
+                                        return o.target === d ? 1 : 0;
+                                    });
+                                } else {
+                                    neighbours.forEach(function (n) {
+                                        node.style("opacity", function (o) {
+                                            if (o == n) return 1;
+                                            if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                            return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                        });
+                                        path.style("opacity", function (o) {
+                                            return o.target === n | o.target === d ? 1 : 0;
+                                        });
+                                    })
+                                }
+                            } else if (layers == 3) {
+                                neighbours = [];
+                                neighbourOfNeighbours=[];
+                                node.style("opacity", function (o) {
+                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                    if (neighboringR(d, o)) neighbours.push(o);
+                                    return neighboringR(d, o) ? 1 : 0.1;
+                                });
+                                if (neighbours[0]==null) {
+                                    path.style("opacity", function (o) {
+                                        return o.target === d ? 1 : 0;
+                                    });
+                                } else {
+                                    neighbours.forEach(function (n) {
+                                        node.style("opacity", function (o) {
+                                            if (o == d) return 1;
+                                            if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                            if (neighboringR(n, o)) neighbourOfNeighbours.push(o);
+                                            return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                        });
+                                        if (neighbourOfNeighbours[0]==null) {
+                                            path.style("opacity", function (o) {
+                                                return o.target === d | o.target === n ? 1 : 0;
+                                            });
+                                        } else {
+                                            neighbourOfNeighbours.forEach(function (p) {
+                                                node.style("opacity", function (o) {
+                                                    if (o == n) return 1;
+                                                    if (o == p) return 1;
+                                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                    return neighboringR(d, o) | neighboringR(n, o) | neighboringR(p, o) ? 1 : 0.1;
+                                                });
+                                                path.style("opacity", function (o) {
+                                                    return o.target === d | o.target === n | o.target === p ? 1 : 0;
+                                                });
+                                            })
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                        if (layer == 1) {
+                            if (layers == 0) {
+                                node.style("opacity", function (o) {
+                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                    return neighboringF(d, o) ? 1 : 0.1;
+                                });
+                                path.style("opacity", function (o) {
+                                    return o.source === d ? 1 : 0;
+                                });
+                            } else if (layers == 1) {
+                                node.style("opacity", function (o) {
+                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                    return neighboringF(d, o) ? 1 : 0.1 && neighboringR(d, o) ? 1 : 0.1;
+                                });
+                                path.style("opacity", function (o) {
+                                    return o.source === d ? 1 : 0 | o.target === d ? 1 : 0;
+                                });
+                            } else if (layers == 2) {
+                                var neighbours = [];
+                                node.style("opacity", function (o) {
+                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                    if (neighboringR(d, o)) neighbours.push(o);
+                                    return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                });
+                                if (neighbours[0]==null) {
+                                    path.style("opacity", function (o) {
+                                        return o.target === d | o.source === d ? 1 : 0;
+                                    });
+                                } else {
+                                    neighbours.forEach(function (n) {
+                                        node.style("opacity", function (o) {
+                                            if (o == n) return 1;
+                                            if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                            return neighboringF(d, o) + neighboringR(d, o) ? 1 : 0.1 && neighboringR(n, o) ? 1 : 0.1;
+                                        });
+                                        path.style("opacity", function (o) {
+                                            return o.target === n | o.target === d | o.source === d ? 1 : 0;
+                                        });
+                                    })
+                                }
+                            }
+                        }
+                        if (layer == 2) {
+                            if (layers == 0) {
+                                var neighbour = [];
+                                node.style("opacity", function (o) {
+                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                    if (neighboringF(d, o)) neighbour.push(o);
+                                    return neighboringF(d, o) ? 1 : 0.1;
+                                });
+                                if (neighbour[0]==null) {
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0;
+                                    });
+                                } else {
+                                    neighbour.forEach(function (n) {
+                                        node.style("opacity", function (o) {
+                                            if (o == n) return 1;
+                                            if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                            return neighboringF(d, o) || neighboringF(n, o) ? 1 : 0.1;
+                                        });
+                                        path.style("opacity", function (o) {
+                                            return o.source === d | o.source === n ? 1 : 0;
+                                        });
+                                    })
+                                }
+                            }else if (layers == 1) {
+                                var neighbour = [];
+                                node.style("opacity", function (o) {
+                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                    if (neighboringF(d, o)) neighbour.push(o);
+                                    return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                });
+                                if (neighbour[0]==null) {
+                                    path.style("opacity", function (o) {
+                                        return o.target === d | o.source === d ? 1 : 0;
+                                    });
+                                } else {
+                                    neighbour.forEach(function (n) {
+                                        node.style("opacity", function (o) {
+                                            if (o == n) return 1;
+                                            if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                            return neighboringR(d, o) + neighboringF(d, o) ? 1 : 0.1 && neighboringF(n, o) ? 1 : 0.1;
+                                        });
+                                        path.style("opacity", function (o) {
+                                            return o.source === d | o.source === n | o.target === d ? 1 : 0;
+                                        });
+                                    })
+                                }
+                            }
+                        }
+                        if (layer == 3) {
+                            if (layers == 0) {
+                                neighbour = [];
+                                neighbourOfNeighbour = [];
+                                node.style("opacity", function (o) {
+                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                    if (neighboringF(d, o)) neighbour.push(o);
+                                    return neighboringF(d, o) ? 1 : 0;
+                                });
+                                if (neighbour[0] == null) {
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0;
+                                    });
+                                } else {
+                                    neighbour.forEach(function (n) {
+                                        node.style("opacity", function (o) {
+                                            if (o == d) return 1;
+                                            if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                            if (neighboringF(n, o)) neighbourOfNeighbour.push(o);
+                                            return neighboringF(d, o) | neighboringF(n, o) ? 1 : 0;
+                                        });
+                                        if (neighbourOfNeighbour[0]==null) {
+                                            path.style("opacity", function (o) {
+                                                return o.source === d | o.source === n ? 1 : 0;
+                                            });
+                                        } else {
+                                            neighbourOfNeighbour.forEach(function (p) {
+                                                node.style("opacity", function (o) {
+                                                    if (o == n) return 1;
+                                                    if (o == p) return 1;
+                                                    if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                    return neighboringF(d, o) | neighboringF(n, o) | neighboringF(p, o) ? 1 : 0;
+                                                });
+                                                path.style("opacity", function (o) {
+                                                    return o.source === d || o.source === p || o.source === n ? 1 : 0;
+                                                });
+                                            })
+                                        }
+                                    });
+                                }
+                            }
+                        }
+
+                        toggle = 1;
+                    }
+
+
+                    else if (toggle == 1) {
+                        node.style("opacity",1);
+                        path.style("opacity",1);
+                        toggle = 0;
+                    }
+                };
+            }
+        });
+
+        function redraw() {
+
+            var query = document.getElementById("search").value.toUpperCase();
+
+            d3.select("svg").remove();
+
+            var width = 1400,
+                height = 2500;
+
+            // get the data
+            d3.csv("force.csv", function(links) {
+
+                var nodes = {};
+
+                var svg = d3.select('body').append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                svg.append("ellipse")
+                    .attr("cx", 300)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#55D390");
+                svg.append("text")
+                    .attr("x", 270)
+                    .attr("dy", "14")
+                    .text("1st Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 653)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#6AEAD7");
+                svg.append("text")
+                    .attr("x", 623)
+                    .attr("dy", "14")
+                    .text("2nd Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 1006)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#55B8D3");
+                svg.append("text")
+                    .attr("x", 976)
+                    .attr("dy", "14")
+                    .text("3rd Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 1360)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#63A3F6");
+                svg.append("text")
+                    .attr("x", 1330)
+                    .attr("dy", "14")
+                    .text("4th Year Unit");
+
+// Compute the distinct nodes from the links.
+                links.forEach(function(link) {
+                    link.source = nodes[link.source] ||
+                        (nodes[link.source] = {name: link.source, title: link.stitle, check: +link.check, tier: +link.stier, pair: link.pair, num:link.snum, LO:link.slearning, competency:link.scompetency});
+                    link.target = nodes[link.target] ||
+                        (nodes[link.target] = {name: link.target, title: link.ttitle, tier: +link.ttier, logic: link.logic, num: link.tnum, LO:link.tlearning, competency:link.tcompetency});
+                });
+
+                var force = d3.layout.force()
+                    .nodes(d3.values(nodes))
+                    .links(links)
+                    .size([width, height])
+                    .on("tick", tick)
+                    .start();
+
+                links.forEach(function(link) {
+                    if (link.check == 0) {
+                        link.type = "straight";
+                    } else if (link.check == 1) {
+                        link.type = "dotted";
+                    } else if (link.check == 2) {
+                        link.type = "double";
+                    }
+                });
+
+// build the arrow.
+                svg.append("svg:defs").selectAll("marker")
+                    .data(["end"])      // Different link/path types can be defined here
+                    .enter().append("svg:marker")    // This section adds in the arrows
+                    .attr("id", String)
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 38.5)
+                    .attr("refY", -0.5)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto")
+                    .append("svg:path")
+                    .attr("d", "M0,-5L10,0L0,5");
+
+// add the links and the arrows
+                var path = svg.append("svg:g").selectAll("path")
+                    .data(force.links())
+                    .enter().append("svg:path")
+                    .attr("class", function(d) { return "link " + d.type; })
+                    .on("mouseover", pair())
+                    .on("mouseout", pair())
+                    .attr("marker-end", function(d) {
+                        if (d.check <= 1) {
+                            return "url(#end)"
+                        }
+                    });
+
+// define the nodes
+                var node = svg.selectAll(".node")
+                    .data(force.nodes())
+                    .enter().append("g")
+                    .attr("class", "node")
+
+                var div = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0);
+
+// add the nodes
+                node.append("circle")
+                    .attr("fill",function(d) {
+                        if (d.tier == 1) {
+                            d.tier = 0.21;
+                            return "#55D390"
+                        } else if (d.tier == 2) {
+                            d.tier = 1.48;
+                            return "#6AEAD7"
+                        } else if (d.tier == 3) {
+                            d.tier = 2.73;
+                            return "#55B8D3"
+                        } else if (d.tier == 4) {
+                            return "#63A3F6"
+                        } else {
+                            return "White"
+                        }
+                    })
+                    .attr("r", 26)
+                    .on("click", fade())
+                    .on("dblclick", function(d) {
+                        d3.select(this)
+                        window.open("https://www.monash.edu.au/pubs/handbooks/units/"+d.name+".html", '_blank');
+                    })
+                    .on("contextmenu", function(d) {
+                        d3.event.preventDefault();
+                        d3.select(this)
+                        window.open("https://unitguidemanager.monash.edu/view?tpCode=S2-01&tpYear=2017&unitCode="+d.name+"&ticket=ST-752697a48f5cf6b236b48ae4e6355081");
+                    })
+                    .on("mouseover", function(d) {
+                        if (b==0) {
+                            selector = false;
+                        } else if (b==1) {
+                            selector = document.getElementById("reverse").checked;
+                        }
+                        div.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                        div.html(d.title)
+                            .style("left", (d3.event.pageX) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function (){
+                        div.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
+
+// add the text
+                node.append("text")
+                    .attr("x", function(d) {
+                        if(d.tier==0.2) {
+                            return -10
+                        } else {
+                            return -21
+                        }
+                    })
+                    .attr("dy", ".35em")
+                    .text(function(d) { return d.name; });
+
+// add the curvy lines
+                function tick() {
+                    path.attr("d", function (d) {
+                        var dx = (d.target.tier * 280) - (d.source.tier * 280),
+                            dy = (d.target.num * 80) - (d.source.num * 80),
+                            dr = 0;
+                        if (d.check == 2) {
+                            dr = Math.sqrt(dx * dx + dy * dy);
+                        }
+                        return "M" +
+                            (d.source.tier * 280 + 240) + "," +
+                            (d.source.num * 80) + "A" +
+                            dr + "," + dr + " 0 0,1 " +
+                            (d.target.tier * 280 + 240) + "," +
+                            (d.target.num * 80);
+                    });
+
+                    node
+                        .attr("transform", function (d) {
+                            return "translate(" + (d.tier * 280 + 240) + "," + (d.num * 80) + ")";
+                        });
+                }
+//collect pairing data
+                function pairing(a, b) {
+                    return links.some(function(d) {
+                        return (d.pair === a || d.pair === b);
+                    });
+                }
+
+                var toggler = 0;
+                function pair() {
+                    return function (d) {
+                        if (toggler == 0) {
+                            path.style("stroke", function (o) {
+                                if (o == d) return "red";
+                                if (o != d) d3.select(this).style("stroke", "none");
+                                div.transition()
+                                    .duration(200)
+                                    .style("opacity", .9);
+                                div.html(d.logic)
+                                    .style("left", (d3.event.pageX) + "px")
+                                    .style("top", (d3.event.pageY - 28) + "px");
+                                if (o.check == 2) {
+                                    return pairing(d, o) | pairing(o, d) ? "red" : "blue";
+                                }
+                                return pairing(d, o) | pairing(o, d) ? "red" : "#666";
+                            });
+                            toggler = 1;
+                        }
+
+                        else if (toggler == 1) {
+                            path.style("stroke", function (o) {
+                                if (o.check == 2) {
+                                    return "blue";
+                                } else {
+                                    return "#666";
+                                }
+                            });
+                            div.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                            toggler = 0;
+                        }
+                    };
+                }
+
+//collect neighboring data forward
+                function neighboringF(a, b) {
+                    return links.some(function(d) {
+                        return (d.source === a && d.target === b);
+                    });
+                }
+
+//collect neighboring data reversed
+                function neighboringR(a, b) {
+                    return links.some(function(d) {
+                        return (d.target === a && d.source === b);
+                    });
+                }
+//fade out all except neighbours
+                var toggle = 0;
+                function fade() {
+                    return function(d) {
+                        if (toggle == 0) {
+                            if (layer == 0) {
+                                if (layers == 0) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        else return 0.1;
+                                    });
+                                    path.style("opacity", "0");
+                                }
+                                else if (layers == 1) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.target === d ? 1 : 0;
+                                    });
+                                } else if (layers == 2) {
+                                    var neighbours = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.target === n | o.target === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                } else if (layers == 3) {
+                                    neighbours = [];
+                                    neighbourOfNeighbours=[];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == d) return 1;
+                                                if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                if (neighboringR(n, o)) neighbourOfNeighbours.push(o);
+                                                return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            if (neighbourOfNeighbours[0]==null) {
+                                                path.style("opacity", function (o) {
+                                                    return o.target === d | o.target === n ? 1 : 0;
+                                                });
+                                            } else {
+                                                neighbourOfNeighbours.forEach(function (p) {
+                                                    node.style("opacity", function (o) {
+                                                        if (o == n) return 1;
+                                                        if (o == p) return 1;
+                                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                        return neighboringR(d, o) | neighboringR(n, o) | neighboringR(p, o) ? 1 : 0.1;
+                                                    });
+                                                    path.style("opacity", function (o) {
+                                                        return o.target === d | o.target === n | o.target === p ? 1 : 0;
+                                                    });
+                                                })
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                            if (layer == 1) {
+                                if (layers == 0) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0;
+                                    });
+                                } else if (layers == 1) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringF(d, o) ? 1 : 0.1 && neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0 | o.target === d ? 1 : 0;
+                                    });
+                                } else if (layers == 2) {
+                                    var neighbours = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d | o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringF(d, o) + neighboringR(d, o) ? 1 : 0.1 && neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.target === n | o.target === d | o.source === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                            if (layer == 2) {
+                                if (layers == 0) {
+                                    var neighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbour[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringF(d, o) || neighboringF(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.source === d | o.source === n ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }else if (layers == 1) {
+                                    var neighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbour[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d | o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringR(d, o) + neighboringF(d, o) ? 1 : 0.1 && neighboringF(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.source === d | o.source === n | o.target === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                            if (layer == 3) {
+                                if (layers == 0) {
+                                    neighbour = [];
+                                    neighbourOfNeighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringF(d, o) ? 1 : 0;
+                                    });
+                                    if (neighbour[0] == null) {
+                                        path.style("opacity", function (o) {
+                                            return o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == d) return 1;
+                                                if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                if (neighboringF(n, o)) neighbourOfNeighbour.push(o);
+                                                return neighboringF(d, o) | neighboringF(n, o) ? 1 : 0;
+                                            });
+                                            if (neighbourOfNeighbour[0]==null) {
+                                                path.style("opacity", function (o) {
+                                                    return o.source === d | o.source === n ? 1 : 0;
+                                                });
+                                            } else {
+                                                neighbourOfNeighbour.forEach(function (p) {
+                                                    node.style("opacity", function (o) {
+                                                        if (o == n) return 1;
+                                                        if (o == p) return 1;
+                                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                        return neighboringF(d, o) | neighboringF(n, o) | neighboringF(p, o) ? 1 : 0;
+                                                    });
+                                                    path.style("opacity", function (o) {
+                                                        return o.source === d || o.source === p || o.source === n ? 1 : 0;
+                                                    });
+                                                })
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+
+                            toggle = 1;
+                        }
+
+
+                        else if (toggle == 1) {
+                            node.style("opacity",1);
+                            path.style("opacity",1);
+                            toggle = 0;
+                        }
+                    };
+                }
+
+                searchNode(query);
+
+                var optArray = [];
+                for (var i = 0; i < force.nodes.length - 1; i++) {
+                    optArray.push(force.nodes[i].name);
+                }
+
+                function searchNode() {
+
+                    //find the node
+                    var node = svg.selectAll(".node");
+                    toggle = 1;
+
+                    var selected = node.filter(function (d, i) {
+                        return d.name != query;
+                    });
+                    selected.style("opacity", "0.1");
+                    var link = svg.selectAll(".link")
+                    link.style("opacity", "0");
+                }
+            });
+        }
+
+        function redraw2()  {
+
+            var query = document.getElementById("search2").value.toLowerCase();
+
+            d3.select("svg").remove();
+
+            var width = 1400,
+                height = 2500;
+
+            // get the data
+            d3.csv("force.csv", function(links) {
+
+                var nodes = {};
+
+                var svg = d3.select('body').append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                svg.append("ellipse")
+                    .attr("cx", 300)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#55D390");
+                svg.append("text")
+                    .attr("x", 270)
+                    .attr("dy", "14")
+                    .text("1st Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 653)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#6AEAD7");
+                svg.append("text")
+                    .attr("x", 623)
+                    .attr("dy", "14")
+                    .text("2nd Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 1006)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#55B8D3");
+                svg.append("text")
+                    .attr("x", 976)
+                    .attr("dy", "14")
+                    .text("3rd Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 1360)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#63A3F6");
+                svg.append("text")
+                    .attr("x", 1330)
+                    .attr("dy", "14")
+                    .text("4th Year Unit");
+
+// Compute the distinct nodes from the links.
+                links.forEach(function(link) {
+                    link.source = nodes[link.source] ||
+                        (nodes[link.source] = {name: link.source, title: link.stitle, check: +link.check, tier: +link.stier, pair: link.pair, num:link.snum, LO:link.slearning, competency:link.scompetency});
+                    link.target = nodes[link.target] ||
+                        (nodes[link.target] = {name: link.target, title: link.ttitle, tier: +link.ttier, logic: link.logic, num: link.tnum, LO:link.tlearning, competency:link.tcompetency});
+                });
+
+                var force = d3.layout.force()
+                    .nodes(d3.values(nodes))
+                    .links(links)
+                    .size([width, height])
+                    .on("tick", tick)
+                    .start();
+
+                links.forEach(function(link) {
+                    if (link.check == 0) {
+                        link.type = "straight";
+                    } else if (link.check == 1) {
+                        link.type = "dotted";
+                    } else if (link.check == 2) {
+                        link.type = "double";
+                    }
+                });
+
+// build the arrow.
+                svg.append("svg:defs").selectAll("marker")
+                    .data(["end"])      // Different link/path types can be defined here
+                    .enter().append("svg:marker")    // This section adds in the arrows
+                    .attr("id", String)
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 38.5)
+                    .attr("refY", -0.5)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto")
+                    .append("svg:path")
+                    .attr("d", "M0,-5L10,0L0,5");
+
+// add the links and the arrows
+                var path = svg.append("svg:g").selectAll("path")
+                    .data(force.links())
+                    .enter().append("svg:path")
+                    .attr("class", function(d) { return "link " + d.type; })
+                    .on("mouseover", pair())
+                    .on("mouseout", pair())
+                    .attr("marker-end", function(d) {
+                        if (d.check <= 1) {
+                            return "url(#end)"
+                        }
+                    });
+
+// define the nodes
+                var node = svg.selectAll(".node")
+                    .data(force.nodes())
+                    .enter().append("g")
+                    .attr("class", "node")
+
+                var div = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0);
+
+// add the nodes
+                node.append("circle")
+                    .attr("fill",function(d) {
+                        if (d.tier == 1) {
+                            d.tier = 0.21;
+                            return "#55D390"
+                        } else if (d.tier == 2) {
+                            d.tier = 1.48;
+                            return "#6AEAD7"
+                        } else if (d.tier == 3) {
+                            d.tier = 2.73;
+                            return "#55B8D3"
+                        } else if (d.tier == 4) {
+                            return "#63A3F6"
+                        } else {
+                            return "White"
+                        }
+                    })
+                    .attr("r", 26)
+                    .on("click", fade())
+                    .on("dblclick", function(d) {
+                        d3.select(this)
+                        window.open("https://www.monash.edu.au/pubs/handbooks/units/"+d.name+".html", '_blank');
+                    })
+                    .on("contextmenu", function(d) {
+                        d3.event.preventDefault();
+                        d3.select(this)
+                        window.open("https://unitguidemanager.monash.edu/view?tpCode=S2-01&tpYear=2017&unitCode="+d.name+"&ticket=ST-752697a48f5cf6b236b48ae4e6355081");
+                    })
+                    .on("mouseover", function(d) {
+                        if (b==0) {
+                            selector = false;
+                        } else if (b==1) {
+                            selector = document.getElementById("reverse").checked;
+                        }
+                        div.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                        div.html(d.title)
+                            .style("left", (d3.event.pageX) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function (){
+                        div.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
+
+// add the text
+                node.append("text")
+                    .attr("x", function(d) {
+                        if(d.tier==0.2) {
+                            return -10
+                        } else {
+                            return -21
+                        }
+                    })
+                    .attr("dy", ".35em")
+                    .text(function(d) { return d.name; });
+
+// add the curvy lines
+                function tick() {
+                    path.attr("d", function (d) {
+                        var dx = (d.target.tier * 280) - (d.source.tier * 280),
+                            dy = (d.target.num * 80) - (d.source.num * 80),
+                            dr = 0;
+                        if (d.check == 2) {
+                            dr = Math.sqrt(dx * dx + dy * dy);
+                        }
+                        return "M" +
+                            (d.source.tier * 280 + 240) + "," +
+                            (d.source.num * 80) + "A" +
+                            dr + "," + dr + " 0 0,1 " +
+                            (d.target.tier * 280 + 240) + "," +
+                            (d.target.num * 80);
+                    });
+
+                    node
+                        .attr("transform", function (d) {
+                            return "translate(" + (d.tier * 280 + 240) + "," + (d.num * 80) + ")";
+                        });
+                }
+
+//collect pairing data
+                function pairing(a, b) {
+                    return links.some(function(d) {
+                        return (d.pair === a || d.pair === b);
+                    });
+                }
+
+                var toggler = 0;
+                function pair() {
+                    return function (d) {
+                        if (toggler == 0) {
+                            path.style("stroke", function (o) {
+                                if (o == d) return "red";
+                                if (o != d) d3.select(this).style("stroke", "none");
+                                div.transition()
+                                    .duration(200)
+                                    .style("opacity", .9);
+                                div.html(d.logic)
+                                    .style("left", (d3.event.pageX) + "px")
+                                    .style("top", (d3.event.pageY - 28) + "px");
+                                if (o.check == 2) {
+                                    return pairing(d, o) | pairing(o, d) ? "red" : "blue";
+                                }
+                                return pairing(d, o) | pairing(o, d) ? "red" : "#666";
+                            });
+                            toggler = 1;
+                        }
+
+                        else if (toggler == 1) {
+                            path.style("stroke", function (o) {
+                                if (o.check == 2) {
+                                    return "blue";
+                                } else {
+                                    return "#666";
+                                }
+                            });
+                            div.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                            toggler = 0;
+                        }
+                    };
+                }
+
+//collect neighboring data forward
+                function neighboringF(a, b) {
+                    return links.some(function(d) {
+                        return (d.source === a && d.target === b);
+                    });
+                }
+
+//collect neighboring data reversed
+                function neighboringR(a, b) {
+                    return links.some(function(d) {
+                        return (d.target === a && d.source === b);
+                    });
+                }
+//fade out all except neighbours
+                var toggle = 0;
+                function fade() {
+                    return function(d) {
+                        if (toggle == 0) {
+                            if (layer == 0) {
+                                if (layers == 0) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        else return 0.1;
+                                    });
+                                    path.style("opacity", "0");
+                                }
+                                else if (layers == 1) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.target === d ? 1 : 0;
+                                    });
+                                } else if (layers == 2) {
+                                    var neighbours = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.target === n | o.target === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                } else if (layers == 3) {
+                                    neighbours = [];
+                                    neighbourOfNeighbours=[];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == d) return 1;
+                                                if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                if (neighboringR(n, o)) neighbourOfNeighbours.push(o);
+                                                return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            if (neighbourOfNeighbours[0]==null) {
+                                                path.style("opacity", function (o) {
+                                                    return o.target === d | o.target === n ? 1 : 0;
+                                                });
+                                            } else {
+                                                neighbourOfNeighbours.forEach(function (p) {
+                                                    node.style("opacity", function (o) {
+                                                        if (o == n) return 1;
+                                                        if (o == p) return 1;
+                                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                        return neighboringR(d, o) | neighboringR(n, o) | neighboringR(p, o) ? 1 : 0.1;
+                                                    });
+                                                    path.style("opacity", function (o) {
+                                                        return o.target === d | o.target === n | o.target === p ? 1 : 0;
+                                                    });
+                                                })
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                            if (layer == 1) {
+                                if (layers == 0) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0;
+                                    });
+                                } else if (layers == 1) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringF(d, o) ? 1 : 0.1 && neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0 | o.target === d ? 1 : 0;
+                                    });
+                                } else if (layers == 2) {
+                                    var neighbours = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d | o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringF(d, o) + neighboringR(d, o) ? 1 : 0.1 && neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.target === n | o.target === d | o.source === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                            if (layer == 2) {
+                                if (layers == 0) {
+                                    var neighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbour[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringF(d, o) || neighboringF(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.source === d | o.source === n ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }else if (layers == 1) {
+                                    var neighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbour[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d | o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringR(d, o) + neighboringF(d, o) ? 1 : 0.1 && neighboringF(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.source === d | o.source === n | o.target === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                            if (layer == 3) {
+                                if (layers == 0) {
+                                    neighbour = [];
+                                    neighbourOfNeighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringF(d, o) ? 1 : 0;
+                                    });
+                                    if (neighbour[0] == null) {
+                                        path.style("opacity", function (o) {
+                                            return o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == d) return 1;
+                                                if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                if (neighboringF(n, o)) neighbourOfNeighbour.push(o);
+                                                return neighboringF(d, o) | neighboringF(n, o) ? 1 : 0;
+                                            });
+                                            if (neighbourOfNeighbour[0]==null) {
+                                                path.style("opacity", function (o) {
+                                                    return o.source === d | o.source === n ? 1 : 0;
+                                                });
+                                            } else {
+                                                neighbourOfNeighbour.forEach(function (p) {
+                                                    node.style("opacity", function (o) {
+                                                        if (o == n) return 1;
+                                                        if (o == p) return 1;
+                                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                        return neighboringF(d, o) | neighboringF(n, o) | neighboringF(p, o) ? 1 : 0;
+                                                    });
+                                                    path.style("opacity", function (o) {
+                                                        return o.source === d || o.source === p || o.source === n ? 1 : 0;
+                                                    });
+                                                })
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+
+                            toggle = 1;
+                        }
+
+
+                        else if (toggle == 1) {
+                            node.style("opacity",1);
+                            path.style("opacity",1);
+                            toggle = 0;
+                        }
+                    };
+                }
+
+                searchNode(query);
+
+                var optArray = [];
+                for (var i = 0; i < force.nodes.length - 1; i++) {
+                    optArray.push(force.nodes[i].LO);
+                }
+
+                function searchNode() {
+
+                    //find the node
+                    var node = svg.selectAll(".node");
+                    toggle = 1;
+                    node.style("opacity", "0.1");
+                    var selected = node.filter(function (d, i) {
+                        return d.LO.includes(query);
+                    });
+                    selected.style("opacity", "1");
+                    var link = svg.selectAll(".link")
+                    link.style("opacity", "0");
+
+                }
+            });
+        }
+
+        function redraw3()  {
+
+            var search = document.getElementById("search3").value.toLowerCase();
+
+            d3.select("svg").remove();
+
+            var width = 1400,
+                height = 2500;
+
+            // get the data
+            d3.csv("force.csv", function(links) {
+
+                var nodes = {};
+
+                var svg = d3.select('body').append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                svg.append("ellipse")
+                    .attr("cx", 300)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#55D390");
+                svg.append("text")
+                    .attr("x", 270)
+                    .attr("dy", "14")
+                    .text("1st Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 653)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#6AEAD7");
+                svg.append("text")
+                    .attr("x", 623)
+                    .attr("dy", "14")
+                    .text("2nd Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 1006)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#55B8D3");
+                svg.append("text")
+                    .attr("x", 976)
+                    .attr("dy", "14")
+                    .text("3rd Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 1360)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#63A3F6");
+                svg.append("text")
+                    .attr("x", 1330)
+                    .attr("dy", "14")
+                    .text("4th Year Unit");
+
+// Compute the distinct nodes from the links.
+                links.forEach(function(link) {
+                    link.source = nodes[link.source] ||
+                        (nodes[link.source] = {name: link.source, title: link.stitle, check: +link.check, tier: +link.stier, pair: link.pair, num:link.snum, LO:link.slearning, competency:link.scompetency});
+                    link.target = nodes[link.target] ||
+                        (nodes[link.target] = {name: link.target, title: link.ttitle, tier: +link.ttier, logic: link.logic, num: link.tnum, LO:link.tlearning, competency:link.tcompetency});
+                });
+
+                var force = d3.layout.force()
+                    .nodes(d3.values(nodes))
+                    .links(links)
+                    .size([width, height])
+                    .on("tick", tick)
+                    .start();
+
+                links.forEach(function(link) {
+                    if (link.check == 0) {
+                        link.type = "straight";
+                    } else if (link.check == 1) {
+                        link.type = "dotted";
+                    } else if (link.check == 2) {
+                        link.type = "double";
+                    }
+                });
+
+// build the arrow.
+                svg.append("svg:defs").selectAll("marker")
+                    .data(["end"])      // Different link/path types can be defined here
+                    .enter().append("svg:marker")    // This section adds in the arrows
+                    .attr("id", String)
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 38.5)
+                    .attr("refY", -0.5)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto")
+                    .append("svg:path")
+                    .attr("d", "M0,-5L10,0L0,5");
+
+// add the links and the arrows
+                var path = svg.append("svg:g").selectAll("path")
+                    .data(force.links())
+                    .enter().append("svg:path")
+                    .attr("class", function(d) { return "link " + d.type; })
+                    .on("mouseover", pair())
+                    .on("mouseout", pair())
+                    .attr("marker-end", function(d) {
+                        if (d.check <= 1) {
+                            return "url(#end)"
+                        }
+                    });
+
+// define the nodes
+                var node = svg.selectAll(".node")
+                    .data(force.nodes())
+                    .enter().append("g")
+                    .attr("class", "node")
+
+                var div = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0);
+
+// add the nodes
+                node.append("circle")
+                    .attr("fill",function(d) {
+                        if (d.tier == 1) {
+                            d.tier = 0.21;
+                            return "#55D390"
+                        } else if (d.tier == 2) {
+                            d.tier = 1.48;
+                            return "#6AEAD7"
+                        } else if (d.tier == 3) {
+                            d.tier = 2.73;
+                            return "#55B8D3"
+                        } else if (d.tier == 4) {
+                            return "#63A3F6"
+                        } else {
+                            return "White"
+                        }
+                    })
+                    .attr("r", 26)
+                    .on("click", fade())
+                    .on("dblclick", function(d) {
+                        d3.select(this)
+                        window.open("https://www.monash.edu.au/pubs/handbooks/units/"+d.name+".html", '_blank');
+                    })
+                    .on("contextmenu", function(d) {
+                        d3.event.preventDefault();
+                        d3.select(this)
+                        window.open("https://unitguidemanager.monash.edu/view?tpCode=S2-01&tpYear=2017&unitCode="+d.name+"&ticket=ST-752697a48f5cf6b236b48ae4e6355081");
+                    })
+                    .on("mouseover", function(d) {
+                        if (b==0) {
+                            selector = false;
+                        } else if (b==1) {
+                            selector = document.getElementById("reverse").checked;
+                        }
+                        div.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                        div.html(d.title)
+                            .style("left", (d3.event.pageX) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function (){
+                        div.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
+
+// add the text
+                node.append("text")
+                    .attr("x", function(d) {
+                        if(d.tier==0.2) {
+                            return -10
+                        } else {
+                            return -21
+                        }
+                    })
+                    .attr("dy", ".35em")
+                    .text(function(d) { return d.name; });
+
+// add the curvy lines
+                function tick() {
+                    path.attr("d", function (d) {
+                        var dx = (d.target.tier * 280) - (d.source.tier * 280),
+                            dy = (d.target.num * 80) - (d.source.num * 80),
+                            dr = 0;
+                        if (d.check == 2) {
+                            dr = Math.sqrt(dx * dx + dy * dy);
+                        }
+                        return "M" +
+                            (d.source.tier * 280 + 240) + "," +
+                            (d.source.num * 80) + "A" +
+                            dr + "," + dr + " 0 0,1 " +
+                            (d.target.tier * 280 + 240) + "," +
+                            (d.target.num * 80);
+                    });
+
+                    node
+                        .attr("transform", function (d) {
+                            return "translate(" + (d.tier * 280 + 240) + "," + (d.num * 80) + ")";
+                        });
+                }
+
+//collect pairing data
+                function pairing(a, b) {
+                    return links.some(function(d) {
+                        return (d.pair === a || d.pair === b);
+                    });
+                }
+
+                var toggler = 0;
+                function pair() {
+                    return function (d) {
+                        if (toggler == 0) {
+                            path.style("stroke", function (o) {
+                                if (o == d) return "red";
+                                if (o != d) d3.select(this).style("stroke", "none");
+                                div.transition()
+                                    .duration(200)
+                                    .style("opacity", .9);
+                                div.html(d.logic)
+                                    .style("left", (d3.event.pageX) + "px")
+                                    .style("top", (d3.event.pageY - 28) + "px");
+                                if (o.check == 2) {
+                                    return pairing(d, o) | pairing(o, d) ? "red" : "blue";
+                                }
+                                return pairing(d, o) | pairing(o, d) ? "red" : "#666";
+                            });
+                            toggler = 1;
+                        }
+
+                        else if (toggler == 1) {
+                            path.style("stroke", function (o) {
+                                if (o.check == 2) {
+                                    return "blue";
+                                } else {
+                                    return "#666";
+                                }
+                            });
+                            div.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                            toggler = 0;
+                        }
+                    };
+                }
+
+//collect neighboring data forward
+                function neighboringF(a, b) {
+                    return links.some(function(d) {
+                        return (d.source === a && d.target === b);
+                    });
+                }
+
+//collect neighboring data reversed
+                function neighboringR(a, b) {
+                    return links.some(function(d) {
+                        return (d.target === a && d.source === b);
+                    });
+                }
+//fade out all except neighbours
+                var toggle = 0;
+                function fade() {
+                    return function(d) {
+                        if (toggle == 0) {
+                            if (layer == 0) {
+                                if (layers == 0) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        else return 0.1;
+                                    });
+                                    path.style("opacity", "0");
+                                }
+                                else if (layers == 1) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.target === d ? 1 : 0;
+                                    });
+                                } else if (layers == 2) {
+                                    var neighbours = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.target === n | o.target === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                } else if (layers == 3) {
+                                    neighbours = [];
+                                    neighbourOfNeighbours=[];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == d) return 1;
+                                                if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                if (neighboringR(n, o)) neighbourOfNeighbours.push(o);
+                                                return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            if (neighbourOfNeighbours[0]==null) {
+                                                path.style("opacity", function (o) {
+                                                    return o.target === d | o.target === n ? 1 : 0;
+                                                });
+                                            } else {
+                                                neighbourOfNeighbours.forEach(function (p) {
+                                                    node.style("opacity", function (o) {
+                                                        if (o == n) return 1;
+                                                        if (o == p) return 1;
+                                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                        return neighboringR(d, o) | neighboringR(n, o) | neighboringR(p, o) ? 1 : 0.1;
+                                                    });
+                                                    path.style("opacity", function (o) {
+                                                        return o.target === d | o.target === n | o.target === p ? 1 : 0;
+                                                    });
+                                                })
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                            if (layer == 1) {
+                                if (layers == 0) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0;
+                                    });
+                                } else if (layers == 1) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringF(d, o) ? 1 : 0.1 && neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0 | o.target === d ? 1 : 0;
+                                    });
+                                } else if (layers == 2) {
+                                    var neighbours = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d | o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringF(d, o) + neighboringR(d, o) ? 1 : 0.1 && neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.target === n | o.target === d | o.source === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                            if (layer == 2) {
+                                if (layers == 0) {
+                                    var neighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbour[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringF(d, o) || neighboringF(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.source === d | o.source === n ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }else if (layers == 1) {
+                                    var neighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbour[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d | o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringR(d, o) + neighboringF(d, o) ? 1 : 0.1 && neighboringF(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.source === d | o.source === n | o.target === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                            if (layer == 3) {
+                                if (layers == 0) {
+                                    neighbour = [];
+                                    neighbourOfNeighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringF(d, o) ? 1 : 0;
+                                    });
+                                    if (neighbour[0] == null) {
+                                        path.style("opacity", function (o) {
+                                            return o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == d) return 1;
+                                                if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                if (neighboringF(n, o)) neighbourOfNeighbour.push(o);
+                                                return neighboringF(d, o) | neighboringF(n, o) ? 1 : 0;
+                                            });
+                                            if (neighbourOfNeighbour[0]==null) {
+                                                path.style("opacity", function (o) {
+                                                    return o.source === d | o.source === n ? 1 : 0;
+                                                });
+                                            } else {
+                                                neighbourOfNeighbour.forEach(function (p) {
+                                                    node.style("opacity", function (o) {
+                                                        if (o == n) return 1;
+                                                        if (o == p) return 1;
+                                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                        return neighboringF(d, o) | neighboringF(n, o) | neighboringF(p, o) ? 1 : 0;
+                                                    });
+                                                    path.style("opacity", function (o) {
+                                                        return o.source === d || o.source === p || o.source === n ? 1 : 0;
+                                                    });
+                                                })
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+
+                            toggle = 1;
+                        }
+
+
+                        else if (toggle == 1) {
+                            node.style("opacity",1);
+                            path.style("opacity",1);
+                            toggle = 0;
+                        }
+                    };
+                }
+
+                if (search.includes(" andnot ")) {
+                    query = search.split(" andnot ");
+                    for(i=0;i<query.length;i++) {
+                        if (query[i].includes("pe")) {query[i] = query[i].toUpperCase()}
+                        else {query[i] = query[i].toLowerCase()}
+                    }
+                    searchNodeANDNOT(query);
+                }
+                else if (search.includes(" and ")) {
+                    query = search.split(" and ");
+                    for(i=0;i<query.length;i++) {
+                        if (query[i].includes("pe")) {query[i] = query[i].toUpperCase()}
+                        else {query[i] = query[i].toLowerCase()}
+                    }
+                    searchNodeAND(query);
+                }
+                else if (search.includes(" or ")) {
+                    query = search.split(" or ");
+                    for(i=0;i<query.length;i++) {
+                        if (query[i].includes("pe")) {query[i] = query[i].toUpperCase()}
+                        else {query[i] = query[i].toLowerCase()}
+                    }
+                    searchNodeOR(query);
+                }
+                else {
+                    query = search;
+                    if (query.includes("pe")) {
+                        query = search.toUpperCase();
+                    }else {
+                        query = search.toLowerCase();
+                    }
+                    searchNode(query);
+                }
+
+                var optArray = [];
+                for (var i = 0; i < force.nodes.length - 1; i++) {
+                    optArray.push(force.nodes[i].competency);
+                }
+
+                function searchNode() {
+
+                    //find the node
+                    var node = svg.selectAll(".node");
+                    toggle = 1;
+                    node.style("opacity", "0.1");
+                    var selected = node.filter(function (d, i) {
+                        return d.competency.includes(query);
+                    });
+                    selected.style("opacity", "1");
+                    var link = svg.selectAll(".link")
+                    link.style("opacity", "0");
+
+                }
+
+                function searchNodeOR() {
+
+                    //find the node
+                    var node = svg.selectAll(".node");
+                    toggle = 1;
+                    node.style("opacity", "0.1");
+                    var link = svg.selectAll(".link");
+                    link.style("opacity", "0");
+                    selected = node.filter(function (d, i) {
+                        return d.competency.includes(query[0]);
+                    });
+                    selected.style("opacity", "1")
+                    selected = node.filter(function (d, i) {
+                        return d.competency.includes(query[1]);
+                    });
+                    selected.style("opacity", "1")
+                    selected = node.filter(function (d, i) {
+                        return d.competency.includes(query[2]);
+                    });
+                    selected.style("opacity", "1")
+                    selected = node.filter(function (d, i) {
+                        return d.competency.includes(query[3]);
+                    });
+                    selected.style("opacity", "1")
+                    selected = node.filter(function (d, i) {
+                        return d.competency.includes(query[4]);
+                    });
+                    selected.style("opacity", "1")
+                }
+
+                function searchNodeAND() {
+
+                    //find the node
+                    var node = svg.selectAll(".node");
+                    node.style("opacity","0.1");
+                    toggle = 1;
+
+                    var selected = node.filter(function (d, i) {
+                        if (query.length==2) {
+                            if (d.competency.includes(query[0]) && d.competency.includes(query[1])) {
+                                return d.name;
+                            }
+                        } else if (query.length==3) {
+                            if (d.competency.includes(query[0]) && d.competency.includes(query[1]) && d.competency.includes(query[2])) {
+                                return d.name;
+                            }
+                        } else if (query.length==4) {
+                            if (d.competency.includes(query[0]) && d.competency.includes(query[1]) && d.competency.includes(query[2]) && d.competency.includes(query[3])) {
+                                return d.name;
+                            }
+                        } else if (query.length==5) {
+                            if (d.competency.includes(query[0]) && d.competency.includes(query[1]) && d.competency.includes(query[2]) && d.competency.includes(query[3]) && d.competency.includes(query[4])) {
+                                return d.name;
+                            }
+                        }
+                    });
+                    selected.style("opacity", "1");
+                    var link = svg.selectAll(".link")
+                    link.style("opacity", "0");
+                }
+
+                function searchNodeANDNOT() {
+
+                    //find the node
+                    var node = svg.selectAll(".node");
+                    node.style("opacity","0.1");
+                    toggle = 1;
+
+                    var selected = node.filter(function (d, i) {
+                        if (query.length==2) {
+                            if (d.competency.includes(query[0]) && (d.competency.indexOf(query[1]) == -1)) {
+                                return d.name;
+                            }
+                        } else if (query.length==3) {
+                            if (d.competency.includes(query[0]) && ~d.competency.includes(query[1]) && ~d.competency.includes(query[2])) {
+                                return d.name;
+                            }
+                        } else if (query.length==4) {
+                            if (d.competency.includes(query[0]) && ~d.competency.includes(query[1]) && ~d.competency.includes(query[2]) && ~d.competency.includes(query[3])) {
+                                return d.name;
+                            }
+                        } else if (query.length==5) {
+                            if (d.competency.includes(query[0]) && ~d.competency.includes(query[1]) && ~d.competency.includes(query[2]) && ~d.competency.includes(query[3]) && ~d.competency.includes(query[4])) {
+                                return d.name;
+                            }
+                        }
+                    });
+                    selected.style("opacity", "1");
+                    var link = svg.selectAll(".link")
+                    link.style("opacity", "0");
+                }
+            });
+        }
+
+        function openNav() {
+            document.getElementById("mySidenav").style.width = "250px";
+
+            d3.select("svg").remove();
+
+            var width = 1400,
+                height = 2500;
+
+            // get the data
+            d3.csv("force.csv", function (links) {
+
+                var nodes = {};
+
+                var svg = d3.select('body').append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                svg.append("ellipse")
+                    .attr("cx", 300)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#55D390");
+                svg.append("text")
+                    .attr("x", 270)
+                    .attr("dy", "14")
+                    .text("1st Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 653)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#6AEAD7");
+                svg.append("text")
+                    .attr("x", 623)
+                    .attr("dy", "14")
+                    .text("2nd Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 1006)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#55B8D3");
+                svg.append("text")
+                    .attr("x", 976)
+                    .attr("dy", "14")
+                    .text("3rd Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 1360)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill", "#63A3F6");
+                svg.append("text")
+                    .attr("x", 1330)
+                    .attr("dy", "14")
+                    .text("4th Year Unit");
+
+// Compute the distinct nodes from the links.
+                links.forEach(function(link) {
+                    link.source = nodes[link.source] ||
+                        (nodes[link.source] = {name: link.source, title: link.stitle, check: +link.check, tier: +link.stier, pair: link.pair, num:link.snum, LO:link.slearning, competency:link.scompetency});
+                    link.target = nodes[link.target] ||
+                        (nodes[link.target] = {name: link.target, title: link.ttitle, tier: +link.ttier, logic: link.logic, num: link.tnum, LO:link.tlearning, competency:link.tcompetency});
+                });
+
+                var force = d3.layout.force()
+                    .nodes(d3.values(nodes))
+                    .links(links)
+                    .size([width, height])
+                    .on("tick", tick)
+                    .start();
+
+                links.forEach(function (link) {
+                    if (link.check == 0) {
+                        link.type = "straight";
+                    } else if (link.check == 1) {
+                        link.type = "dotted";
+                    } else if (link.check == 2) {
+                        link.type = "double";
+                    }
+                });
+
+// build the arrow.
+                svg.append("svg:defs").selectAll("marker")
+                    .data(["end"])      // Different link/path types can be defined here
+                    .enter().append("svg:marker")    // This section adds in the arrows
+                    .attr("id", String)
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 38.5)
+                    .attr("refY", -0.5)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto")
+                    .append("svg:path")
+                    .attr("d", "M0,-5L10,0L0,5");
+
+// add the links and the arrows
+                var path = svg.append("svg:g").selectAll("path")
+                    .data(force.links())
+                    .enter().append("svg:path")
+                    .attr("class", function (d) {
+                        return "link " + d.type;
+                    })
+                    .on("mouseover", pair())
+                    .on("mouseout", pair())
+                    .attr("marker-end", function (d) {
+                        if (d.check <= 1) {
+                            return "url(#end)"
+                        }
+                    });
+
+// define the nodes
+                var node = svg.selectAll(".node")
+                    .data(force.nodes())
+                    .enter().append("g")
+                    .attr("class", "node")
+
+                var div = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0);
+
+// add the nodes
+                node.append("circle")
+                    .attr("fill",function(d) {
+                        if (d.tier == 1) {
+                            d.tier = 0.21;
+                            return "#55D390"
+                        } else if (d.tier == 2) {
+                            d.tier = 1.48;
+                            return "#6AEAD7"
+                        } else if (d.tier == 3) {
+                            d.tier = 2.73;
+                            return "#55B8D3"
+                        } else if (d.tier == 4) {
+                            return "#63A3F6"
+                        } else {
+                            return "White"
+                        }
+                    })
+                    .attr("r", 26)
+                    .on("click", fade())
+                    .on("dblclick", function (d) {
+                        d3.select(this)
+                        window.open("https://www.monash.edu.au/pubs/handbooks/units/" + d.name + ".html", '_blank');
+                    })
+                    .on("contextmenu", function(d) {
+                        d3.event.preventDefault();
+                        d3.select(this)
+                        window.open("https://unitguidemanager.monash.edu/view?tpCode=S2-01&tpYear=2017&unitCode="+d.name+"&ticket=ST-752697a48f5cf6b236b48ae4e6355081");
+                    })
+                    .on("mouseover", function (d) {
+                        if (b == 0) {
+                            selector = false;
+                        } else if (b == 1) {
+                            selector = document.getElementById("reverse").checked;
+                        }
+                        div.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                        div.html(d.title)
+                            .style("left", (d3.event.pageX) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function () {
+                        div.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
+
+// add the text
+                node.append("text")
+                    .attr("x", function (d) {
+                        if (d.tier == 0.2) {
+                            return -10
+                        } else {
+                            return -21
+                        }
+                    })
+                    .attr("dy", ".35em")
+                    .text(function (d) {
+                        return d.name;
+                    });
+
+// add the curvy lines
+                function tick() {
+                    path.attr("d", function (d) {
+                        var dx = (d.target.tier * 280) - (d.source.tier * 280),
+                            dy = (d.target.num * 80) - (d.source.num * 80),
+                            dr = 0;
+                        if (d.check == 2) {
+                            dr = Math.sqrt(dx * dx + dy * dy);
+                        }
+                        return "M" +
+                            (d.source.tier * 280 + 240) + "," +
+                            (d.source.num * 80) + "A" +
+                            dr + "," + dr + " 0 0,1 " +
+                            (d.target.tier * 280 + 240) + "," +
+                            (d.target.num * 80);
+                    });
+
+                    node
+                        .attr("transform", function (d) {
+                            return "translate(" + (d.tier * 280 + 240) + "," + (d.num * 80) + ")";
+                        });
+                }
+
+//collect pairing data
+                function pairing(a, b) {
+                    return links.some(function (d) {
+                        return (d.pair === a || d.pair === b);
+                    });
+                }
+
+                var toggler = 0;
+
+                function pair() {
+                    return function (d) {
+                        if (toggler == 0) {
+                            path.style("stroke", function (o) {
+                                if (o == d) return "red";
+                                if (o != d) d3.select(this).style("stroke", "none");
+                                div.transition()
+                                    .duration(200)
+                                    .style("opacity", .9);
+                                div.html(d.logic)
+                                    .style("left", (d3.event.pageX) + "px")
+                                    .style("top", (d3.event.pageY - 28) + "px");
+                                if (o.check == 2) {
+                                    return pairing(d, o) | pairing(o, d) ? "red" : "blue";
+                                }
+                                return pairing(d, o) | pairing(o, d) ? "red" : "#666";
+                            });
+                            toggler = 1;
+                        }
+
+                        else if (toggler == 1) {
+                            path.style("stroke", function (o) {
+                                if (o.check == 2) {
+                                    return "blue";
+                                } else {
+                                    return "#666";
+                                }
+                            });
+                            div.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                            toggler = 0;
+                        }
+                    };
+                }
+
+//collect neighboring data forward
+                function neighboringF(a, b) {
+                    return links.some(function (d) {
+                        return (d.source === a && d.target === b);
+                    });
+                }
+
+//collect neighboring data reversed
+                function neighboringR(a, b) {
+                    return links.some(function (d) {
+                        return (d.target === a && d.source === b);
+                    });
+                }
+
+//fade out all except neighbours
+                var toggle = 0;
+                function fade() {
+                    return function(d) {
+                        if (toggle == 0) {
+                            if (layer == 0) {
+                                if (layers == 0) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        else return 0.1;
+                                    });
+                                    path.style("opacity", "0");
+                                }
+                                else if (layers == 1) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.target === d ? 1 : 0;
+                                    });
+                                } else if (layers == 2) {
+                                    var neighbours = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.target === n | o.target === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                } else if (layers == 3) {
+                                    neighbours = [];
+                                    neighbourOfNeighbours=[];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == d) return 1;
+                                                if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                if (neighboringR(n, o)) neighbourOfNeighbours.push(o);
+                                                return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            if (neighbourOfNeighbours[0]==null) {
+                                                path.style("opacity", function (o) {
+                                                    return o.target === d | o.target === n ? 1 : 0;
+                                                });
+                                            } else {
+                                                neighbourOfNeighbours.forEach(function (p) {
+                                                    node.style("opacity", function (o) {
+                                                        if (o == n) return 1;
+                                                        if (o == p) return 1;
+                                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                        return neighboringR(d, o) | neighboringR(n, o) | neighboringR(p, o) ? 1 : 0.1;
+                                                    });
+                                                    path.style("opacity", function (o) {
+                                                        return o.target === d | o.target === n | o.target === p ? 1 : 0;
+                                                    });
+                                                })
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                            if (layer == 1) {
+                                if (layers == 0) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0;
+                                    });
+                                } else if (layers == 1) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringF(d, o) ? 1 : 0.1 && neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0 | o.target === d ? 1 : 0;
+                                    });
+                                } else if (layers == 2) {
+                                    var neighbours = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d | o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringF(d, o) + neighboringR(d, o) ? 1 : 0.1 && neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.target === n | o.target === d | o.source === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                            if (layer == 2) {
+                                if (layers == 0) {
+                                    var neighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbour[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringF(d, o) || neighboringF(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.source === d | o.source === n ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }else if (layers == 1) {
+                                    var neighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbour[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d | o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringR(d, o) + neighboringF(d, o) ? 1 : 0.1 && neighboringF(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.source === d | o.source === n | o.target === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                            if (layer == 3) {
+                                if (layers == 0) {
+                                    neighbour = [];
+                                    neighbourOfNeighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringF(d, o) ? 1 : 0;
+                                    });
+                                    if (neighbour[0] == null) {
+                                        path.style("opacity", function (o) {
+                                            return o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == d) return 1;
+                                                if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                if (neighboringF(n, o)) neighbourOfNeighbour.push(o);
+                                                return neighboringF(d, o) | neighboringF(n, o) ? 1 : 0;
+                                            });
+                                            if (neighbourOfNeighbour[0]==null) {
+                                                path.style("opacity", function (o) {
+                                                    return o.source === d | o.source === n ? 1 : 0;
+                                                });
+                                            } else {
+                                                neighbourOfNeighbour.forEach(function (p) {
+                                                    node.style("opacity", function (o) {
+                                                        if (o == n) return 1;
+                                                        if (o == p) return 1;
+                                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                        return neighboringF(d, o) | neighboringF(n, o) | neighboringF(p, o) ? 1 : 0;
+                                                    });
+                                                    path.style("opacity", function (o) {
+                                                        return o.source === d || o.source === p || o.source === n ? 1 : 0;
+                                                    });
+                                                })
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+
+                            toggle = 1;
+                        }
+
+
+                        else if (toggle == 1) {
+                            node.style("opacity",1);
+                            path.style("opacity",1);
+                            toggle = 0;
+                        }
+                    };
+                }
+            });
+        }
+
+        function closeNav() {
+            document.getElementById("mySidenav").style.width = "0";
+
+            d3.select("svg").remove();
+
+            var width = 1400,
+                height = 2500;
+
+            // get the data
+            d3.csv("force.csv", function (links) {
+
+                var nodes = {};
+
+                var svg = d3.select('body').append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                svg.append("ellipse")
+                    .attr("cx", 50)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill","#55D390");
+                svg.append("text")
+                    .attr("x", 20)
+                    .attr("dy", "14")
+                    .text("1st Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 483)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill","#6AEAD7");
+                svg.append("text")
+                    .attr("x", 453)
+                    .attr("dy", "14")
+                    .text("2nd Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 916)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill","#55B8D3");
+                svg.append("text")
+                    .attr("x", 886)
+                    .attr("dy", "14")
+                    .text("3rd Year Unit");
+
+                svg.append("ellipse")
+                    .attr("cx", 1350)
+                    .attr("cy", 10)
+                    .attr("rx", 35)
+                    .attr("ry", 10)
+                    .style("fill","#63A3F6");
+                svg.append("text")
+                    .attr("x", 1320)
+                    .attr("dy", "14")
+                    .text("4th Year Unit");
+
+// Compute the distinct nodes from the links.
+                links.forEach(function(link) {
+                    link.source = nodes[link.source] ||
+                        (nodes[link.source] = {name: link.source, title: link.stitle, check: +link.check, tier: +link.stier, pair: link.pair, num:link.snum, LO:link.slearning, competency:link.scompetency});
+                    link.target = nodes[link.target] ||
+                        (nodes[link.target] = {name: link.target, title: link.ttitle, tier: +link.ttier, logic: link.logic, num: link.tnum, LO:link.tlearning, competency:link.tcompetency});
+                });
+
+                var force = d3.layout.force()
+                    .nodes(d3.values(nodes))
+                    .links(links)
+                    .size([width, height])
+                    .on("tick", tick)
+                    .start();
+
+                links.forEach(function (link) {
+                    if (link.check == 0) {
+                        link.type = "straight";
+                    } else if (link.check == 1) {
+                        link.type = "dotted";
+                    } else if (link.check == 2) {
+                        link.type = "double";
+                    }
+                });
+
+// build the arrow.
+                svg.append("svg:defs").selectAll("marker")
+                    .data(["end"])      // Different link/path types can be defined here
+                    .enter().append("svg:marker")    // This section adds in the arrows
+                    .attr("id", String)
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 38.5)
+                    .attr("refY", -0.5)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto")
+                    .append("svg:path")
+                    .attr("d", "M0,-5L10,0L0,5");
+
+// add the links and the arrows
+                var path = svg.append("svg:g").selectAll("path")
+                    .data(force.links())
+                    .enter().append("svg:path")
+                    .attr("class", function (d) {
+                        return "link " + d.type;
+                    })
+                    .on("mouseover", pair())
+                    .on("mouseout", pair())
+                    .attr("marker-end", function (d) {
+                        if (d.check <= 1) {
+                            return "url(#end)"
+                        }
+                    });
+
+// define the nodes
+                var node = svg.selectAll(".node")
+                    .data(force.nodes())
+                    .enter().append("g")
+                    .attr("class", "node")
+
+                var div = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0);
+
+// add the nodes
+                node.append("circle")
+                    .attr("fill",function(d) {
+                        if (d.tier == 1) {
+                            d.tier = 0.14;
+                            return "#55D390"
+                        } else if (d.tier == 2) {
+                            d.tier = 1.44;
+                            return "#6AEAD7"
+                        } else if (d.tier == 3) {
+                            d.tier = 2.72;
+                            return "#55B8D3"
+                        } else if (d.tier == 4) {
+                            return "#63A3F6"
+                        } else {
+                            return "White"
+                        }
+                    })
+                    .attr("r", 26)
+                    .on("click", fade())
+                    .on("dblclick", function (d) {
+                        d3.select(this)
+                        window.open("https://www.monash.edu.au/pubs/handbooks/units/" + d.name + ".html", '_blank');
+                    })
+                    .on("contextmenu", function(d) {
+                        d3.event.preventDefault();
+                        d3.select(this)
+                        window.open("https://unitguidemanager.monash.edu/view?tpCode=S2-01&tpYear=2017&unitCode="+d.name+"&ticket=ST-752697a48f5cf6b236b48ae4e6355081");
+                    })
+                    .on("mouseover", function (d) {
+                        if (b == 0) {
+                            selector = false;
+                        } else if (b == 1) {
+                            selector = document.getElementById("reverse").checked;
+                        }
+                        div.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                        div.html(d.title)
+                            .style("left", (d3.event.pageX) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function () {
+                        div.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
+
+// add the text
+                node.append("text")
+                    .attr("x", function (d) {
+                        if (d.tier == 0.2) {
+                            return -10
+                        } else {
+                            return -21
+                        }
+                    })
+                    .attr("dy", ".35em")
+                    .text(function (d) {
+                        return d.name;
+                    });
+
+// add the curvy lines
+                function tick() {
+                    path.attr("d", function(d) {
+                        var dx = (d.target.tier * 337) - (d.source.tier * 337),
+                            dy = (d.target.num * 80) - (d.source.num * 80),
+                            dr = 0;
+                        if (d.check == 2) {
+                            dr = Math.sqrt(dx * dx + dy * dy);
+                        }
+                        return "M" +
+                            (d.source.tier*337) + "," +
+                            (d.source.num*80) + "A" +
+                            dr + "," + dr + " 0 0,1 " +
+                            (d.target.tier*337) + "," +
+                            (d.target.num*80);
+                    });
+
+                    node
+                        .attr("transform", function(d) {
+                            return "translate(" + (d.tier * 337) + "," + (d.num * 80) + ")"; });
+                }
+
+//collect pairing data
+                function pairing(a, b) {
+                    return links.some(function (d) {
+                        return (d.pair === a || d.pair === b);
+                    });
+                }
+
+                var toggler = 0;
+
+                function pair() {
+                    return function (d) {
+                        if (toggler == 0) {
+                            path.style("stroke", function (o) {
+                                if (o == d) return "red";
+                                if (o != d) d3.select(this).style("stroke", "none");
+                                div.transition()
+                                    .duration(200)
+                                    .style("opacity", .9);
+                                div.html(d.logic)
+                                    .style("left", (d3.event.pageX) + "px")
+                                    .style("top", (d3.event.pageY - 28) + "px");
+                                if (o.check == 2) {
+                                    return pairing(d, o) | pairing(o, d) ? "red" : "blue";
+                                }
+                                return pairing(d, o) | pairing(o, d) ? "red" : "#666";
+                            });
+                            toggler = 1;
+                        }
+
+                        else if (toggler == 1) {
+                            path.style("stroke", function (o) {
+                                if (o.check == 2) {
+                                    return "blue";
+                                } else {
+                                    return "#666";
+                                }
+                            });
+                            div.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                            toggler = 0;
+                        }
+                    };
+                }
+
+//collect neighboring data forward
+                function neighboringF(a, b) {
+                    return links.some(function (d) {
+                        return (d.source === a && d.target === b);
+                    });
+                }
+
+//collect neighboring data reversed
+                function neighboringR(a, b) {
+                    return links.some(function (d) {
+                        return (d.target === a && d.source === b);
+                    });
+                }
+
+//fade out all except neighbours
+                var toggle = 0;
+                function fade() {
+                    return function(d) {
+                        if (toggle == 0) {
+                            if (layer == 0) {
+                                if (layers == 0) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        else return 0.1;
+                                    });
+                                    path.style("opacity", "0");
+                                }
+                                else if (layers == 1) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.target === d ? 1 : 0;
+                                    });
+                                } else if (layers == 2) {
+                                    var neighbours = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.target === n | o.target === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                } else if (layers == 3) {
+                                    neighbours = [];
+                                    neighbourOfNeighbours=[];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == d) return 1;
+                                                if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                if (neighboringR(n, o)) neighbourOfNeighbours.push(o);
+                                                return neighboringR(d, o) | neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            if (neighbourOfNeighbours[0]==null) {
+                                                path.style("opacity", function (o) {
+                                                    return o.target === d | o.target === n ? 1 : 0;
+                                                });
+                                            } else {
+                                                neighbourOfNeighbours.forEach(function (p) {
+                                                    node.style("opacity", function (o) {
+                                                        if (o == n) return 1;
+                                                        if (o == p) return 1;
+                                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                        return neighboringR(d, o) | neighboringR(n, o) | neighboringR(p, o) ? 1 : 0.1;
+                                                    });
+                                                    path.style("opacity", function (o) {
+                                                        return o.target === d | o.target === n | o.target === p ? 1 : 0;
+                                                    });
+                                                })
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                            if (layer == 1) {
+                                if (layers == 0) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0;
+                                    });
+                                } else if (layers == 1) {
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        return neighboringF(d, o) ? 1 : 0.1 && neighboringR(d, o) ? 1 : 0.1;
+                                    });
+                                    path.style("opacity", function (o) {
+                                        return o.source === d ? 1 : 0 | o.target === d ? 1 : 0;
+                                    });
+                                } else if (layers == 2) {
+                                    var neighbours = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringR(d, o)) neighbours.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbours[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d | o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbours.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringF(d, o) + neighboringR(d, o) ? 1 : 0.1 && neighboringR(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.target === n | o.target === d | o.source === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                            if (layer == 2) {
+                                if (layers == 0) {
+                                    var neighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbour[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringF(d, o) || neighboringF(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.source === d | o.source === n ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }else if (layers == 1) {
+                                    var neighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringR(d, o) ? 1 : 0.1 && neighboringF(d, o) ? 1 : 0.1;
+                                    });
+                                    if (neighbour[0]==null) {
+                                        path.style("opacity", function (o) {
+                                            return o.target === d | o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == n) return 1;
+                                                if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                return neighboringR(d, o) + neighboringF(d, o) ? 1 : 0.1 && neighboringF(n, o) ? 1 : 0.1;
+                                            });
+                                            path.style("opacity", function (o) {
+                                                return o.source === d | o.source === n | o.target === d ? 1 : 0;
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                            if (layer == 3) {
+                                if (layers == 0) {
+                                    neighbour = [];
+                                    neighbourOfNeighbour = [];
+                                    node.style("opacity", function (o) {
+                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                        if (neighboringF(d, o)) neighbour.push(o);
+                                        return neighboringF(d, o) ? 1 : 0;
+                                    });
+                                    if (neighbour[0] == null) {
+                                        path.style("opacity", function (o) {
+                                            return o.source === d ? 1 : 0;
+                                        });
+                                    } else {
+                                        neighbour.forEach(function (n) {
+                                            node.style("opacity", function (o) {
+                                                if (o == d) return 1;
+                                                if (o == n) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                if (neighboringF(n, o)) neighbourOfNeighbour.push(o);
+                                                return neighboringF(d, o) | neighboringF(n, o) ? 1 : 0;
+                                            });
+                                            if (neighbourOfNeighbour[0]==null) {
+                                                path.style("opacity", function (o) {
+                                                    return o.source === d | o.source === n ? 1 : 0;
+                                                });
+                                            } else {
+                                                neighbourOfNeighbour.forEach(function (p) {
+                                                    node.style("opacity", function (o) {
+                                                        if (o == n) return 1;
+                                                        if (o == p) return 1;
+                                                        if (o == d) return 1 && d3.select(this).style("stroke-width", 3.5);
+                                                        return neighboringF(d, o) | neighboringF(n, o) | neighboringF(p, o) ? 1 : 0;
+                                                    });
+                                                    path.style("opacity", function (o) {
+                                                        return o.source === d || o.source === p || o.source === n ? 1 : 0;
+                                                    });
+                                                })
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+
+                            toggle = 1;
+                        }
+
+
+                        else if (toggle == 1) {
+                            node.style("opacity",1);
+                            path.style("opacity",1);
+                            toggle = 0;
+                        }
+                    };
+                }
+            });
+        }
+    </script>
+</div>
 </body>
 </html>

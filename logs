@@ -1,0 +1,77 @@
+Week 1:
+learned basic html and javascript programming
+wrote simple codes to interpret data
+
+Resources:
+https://www.youtube.com/watch?v=OhPFgqHz68o
+
+Week 2:
+wrote codes for skeleton - force diagram
+
+Resources:
+http://bl.ocks.org/d3noob/5141278
+
+Week 3:
+added colors and tooltips on mouseover/mouseout click/dblclick
+
+Resources:
+http://bl.ocks.org/d3noob/a22c42db65eb00d4e369
+http://stackoverflow.com/questions/9122078/difference-between-onclick-vs-click
+
+Week 4:
+added search function
+added fade non-neighbours
+added directional toggle for fade
+
+Resources:
+http://jsfiddle.net/simonraper/jz2AU/?utm_source=website&utm_medium=embed&utm_campaign=jz2AU
+http://jsfiddle.net/simonraper/Bf5nM/?utm_source=website&utm_medium=embed&utm_campaign=Bf5nM
+http://stackoverflow.com/questions/42671586/how-to-find-neighbours-in-a-d3-force-layout-by-searching-box
+http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/
+
+Week 5:
+added tooltips for paths/links
+added dropdown select
+changed fade to onclick
+
+Resources:
+http://stackoverflow.com/questions/1085801/get-selected-value-in-dropdown-list-using-javascript
+
+Week 6:
+added layers
+added filter mechanics
+
+Resources:
+http://stackoverflow.com/questions/12420905/how-to-repeat-drop-down-list-again-and-again-in-same-jsp
+
+Easter Break:
+changed format to tree type layout
+fixed dropdown menu
+added enter to submit search query
+changed toggle button
+
+Resources:
+https://www.w3schools.com/howto/howto_css_switch.asp
+http://stackoverflow.com/questions/13987300/how-to-trigger-enter-key-press-of-textbox
+
+Week 7:
+fixed blue mess for co-requisites
+
+Week 8:
+combined filters into a dropdown menu
+
+Week 9:
+switched toggle button to a switch(check box)
+
+Week 10:
+added search for learning outcome
+partially fixed layer directions
+redone color scheme
+fixed and/or from +/,
+
+Week 11:
+added panel for filters
+fixed learning outcome lookup
+
+Resources:
+https://www.w3schools.com/howto/howto_js_sidenav.asp
