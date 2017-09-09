@@ -2280,6 +2280,7 @@
             }
 
             var token = 0;
+            // search for the brackets
             if (search.includes("(")) {
                 token+=1;
                 query = search.split(/[()]/);
@@ -2317,6 +2318,7 @@
                     searchNode(query);
                 }
             }
+            // search for ANDNOT
             if (search.includes(" andnot ")) {
                 query = search.split(" andnot ");
                 for(i=0;i<query.length;i++) {
@@ -2325,6 +2327,7 @@
                 }
                 searchNodeANDNOT(query);
             }
+            // search for AND
             else if (search.includes(" and ")) {
                 query = search.split(" and ");
                 for(i=0;i<query.length;i++) {
@@ -2333,6 +2336,7 @@
                 }
                 searchNodeAND(query);
             }
+            // search for OR
             else if (search.includes(" or ")) {
                 query = search.split(" or ");
                 for(i=0;i<query.length;i++) {
@@ -2342,6 +2346,7 @@
                 console.log(query);
                 searchNodeOR(query);
             }
+            // else plain search
             else {
                 query = search;
                 if (query.includes("pe")) {
